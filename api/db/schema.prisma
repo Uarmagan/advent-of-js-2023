@@ -1,0 +1,69 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = "native"
+}
+
+
+
+model User {
+  id    Int     @id @default(autoincrement())
+  email String  @unique
+  password String
+  firstName String
+  lastName String
+  avatar String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  role Role
+  userStatus  UserStatus[] // Relation field to UserStatus
+  santaPairing Pairing[] @relation("Santa") // Relation field to Pairing
+  personPairing Pairing[] @relation("Person") // Relation field to Pairing
+
+}
+
+model Event {
+  id    String  @id
+  name String
+  date DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  sendReminder Boolean
+  userStatus  UserStatus[]
+}
+
+
+model UserStatus {
+  id  String @id
+  eventId String
+  userId Int
+  status UserStatusEnum
+  user     User           @relation(fields: [userId], references: [id])
+  event    Event          @relation(fields: [eventId], references: [id])
+}
+
+model Pairing {
+  id  Int @id
+  eventId String
+  santaId Int
+  personId Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  santa      User     @relation("Santa", fields: [santaId], references: [id])
+  person     User     @relation("Person", fields: [personId], references: [id])
+}
+
+enum UserStatusEnum {
+  INVITED
+  DECLINED
+  ACCEPTED
+}
+
+enum Role {
+  ADMIN
+  USER
+}
